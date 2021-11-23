@@ -17,7 +17,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 
 // this app is developed by using api and useEffect and formik validation added
@@ -52,6 +53,7 @@ useEffect(()=>{
                 <Button varient="text" color="inherit" onClick={()=>history.push("/")}>Home</Button>
                 <Button varient="text" color="inherit" onClick={()=>history.push("/createproduct")}>Add Product</Button>
                 <Button varient="text" color="inherit" onClick={()=>history.push("/productlist")}>Product list</Button>
+                
 
                 <Button varient="text" color="inherit" style={{marginLeft:"auto"}} onClick={()=>setMode(mode==="light"? "dark":"light")}> {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />} {mode==="light"? "Dark":"Light"}Mode</Button>
               </Toolbar>
@@ -85,7 +87,6 @@ useEffect(()=>{
     </ThemeProvider>
   );
 }
-
 
 //creating home page
 function Home() {
@@ -322,6 +323,7 @@ function Listproduct({productpic,name,prize,editButton,deleteButton}){
          <h2 className="text-deco">Product: {name}</h2>
           <h3 className="text-deco">Prize:  {prize}</h3>
             <div className="edit-delete">
+            <Like />
               {editButton}{deleteButton}
             </div>
         </div>
@@ -331,6 +333,14 @@ function Listproduct({productpic,name,prize,editButton,deleteButton}){
 }
 
 
+function Like(){
+  const [like, setLike] = useState(true)
+  return(
+    <div>
+      <IconButton onClick={()=>setLike(!like)} color="secondary" aria-label="description">{like?<FavoriteBorderIcon/>:<FavoriteIcon/>}</IconButton>
+    </div>
+  );
+}
 
 
 
