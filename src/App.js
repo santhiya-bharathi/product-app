@@ -15,71 +15,73 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
 
 
 
-// this app is developed by using api and useEffect 
+// this app is developed by using api and useEffect and formik validation added
 export default function App() {
 
-const [scientist, setScientist] = useState([]);
-  const history = useHistory();
-  const [mode, setMode] = useState("dark");
+const [product, setProduct] = useState([]);
+const history = useHistory();
+const [mode, setMode] = useState("dark");
 const darkTheme = createTheme({
   palette: {
     mode: mode,
   },
 });
-console.log(scientist);
-
+console.log(product);
+// GET method is used for read the data
 useEffect(()=>{
   fetch("https://616d58f537f997001745d9d1.mockapi.io/products", {method:"GET"})
   .then((data)=>data.json())
-  .then((scis)=>setScientist(scis));
+  .then((scis)=>setProduct(scis));
 }, []);
 
   return (
      // themeprovider for dark and light mode
 
       // paper for blackground
-      <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={darkTheme}>
       <Paper elevation={4} style={{borderRadius:"0px",minHeight:"100vh"}}>
 
-    <div className="App">
-       <AppBar position="static">
-       <Toolbar>
-       <Button varient="text" color="inherit" onClick={()=>history.push("/")}>Home</Button>
-       <Button varient="text" color="inherit" onClick={()=>history.push("/createscientist")}>Create scientistlist</Button>
-       <Button varient="text" color="inherit" onClick={()=>history.push("/scientistlist")}>Scientist list</Button>
+         <div className="App">
+           <AppBar position="static">
+              <Toolbar>
+                <Button varient="text" color="inherit" onClick={()=>history.push("/")}>Home</Button>
+                <Button varient="text" color="inherit" onClick={()=>history.push("/createproduct")}>Add Product</Button>
+                <Button varient="text" color="inherit" onClick={()=>history.push("/productlist")}>Product list</Button>
 
-       <Button varient="text" color="inherit" style={{marginLeft:"auto"}} onClick={()=>setMode(mode==="light"? "dark":"light")}> {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />} {mode==="light"? "Dark":"Light"}Mode</Button>
-       </Toolbar>
-       </AppBar>
+                <Button varient="text" color="inherit" style={{marginLeft:"auto"}} onClick={()=>setMode(mode==="light"? "dark":"light")}> {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />} {mode==="light"? "Dark":"Light"}Mode</Button>
+              </Toolbar>
+            </AppBar>
       
-       <Switch>
+            <Switch>
       
-      <Route exact path="/">
-          <Home />
-        </Route>
+                <Route exact path="/">
+                  <Home />
+                </Route>
 
-        <Route path="/scientistlist/edit/:id">
-          <Editscientist />
-        </Route>
+                <Route path="/productlist/edit/:id">
+                 <Editproduct />
+                </Route>
 
-        <Route path="/scientistlist">
-          <Scientistlist />
-        </Route>
+                <Route path="/productlist">
+                 <Productlist />
+                </Route>
 
-        <Route path="/createscientist">
-          <Createscientist />
-        </Route>
+                <Route path="/createproduct">
+                 <Createproduct />
+                </Route>
 
-        <Route path="**">
-          <NotFound/>
-        </Route>
+                <Route path="**">
+                  <NotFound/>
+                </Route>
 
-      </Switch>
-    </div>
-    </Paper>
+            </Switch>
+         </div>
+      </Paper>
     </ThemeProvider>
   );
 }
@@ -90,11 +92,11 @@ function Home() {
   const history = useHistory();
   return (
     <div className="home">
-      <h2 className="home-hello">Hello All!!!</h2>
-      <img src="https://cloudproserv.com/wp-content/uploads/2019/05/Welcome-to-our-new-website-1280x720.jpg" alt="welcome"/>
-      <div>
-      <Button onClick={()=>history.push("/scientistlist") }variant="contained">scientistlist<ArrowForwardIcon/></Button>
-      </div>
+        <h2 className="home-hello">Hello All!!!</h2>
+           <img src="https://cloudproserv.com/wp-content/uploads/2019/05/Welcome-to-our-new-website-1280x720.jpg" alt="welcome"/>
+             <div>
+           <Button onClick={()=>history.push("/productlist") }variant="contained">productlist<ArrowForwardIcon/></Button>
+       </div>
     </div>
   );
 }
@@ -104,143 +106,226 @@ function NotFound(){
   return(
     <div className="not-found-pic">
       <h1 className="not-found-name">404 Not Found</h1>
-      <img  src="https://s12emagst.akamaized.net/assets/hu/images/error_404_600px.gif" alt="404 not found"/>
+      <img  src="https://cdn.dribbble.com/users/1138875/screenshots/4669703/404_animation.gif" alt="404 not found"/>
     </div>
   );
 }
 
 //crud app is developed by using POST method using API
 
-function Createscientist(){
+function Createproduct(){
+  
   const history = useHistory();
-  const [name, setName] = useState("");
-  const [productpic, setProductpic] = useState("");
 
-const addUser =()=>{
-  const newUser= {productpic, name};
- 
-  fetch(`https://616d58f537f997001745d9d1.mockapi.io/products`, {
-    method:"POST",
-    body: JSON.stringify(newUser),
-    headers: {'Content-Type': 'application/json'},
-}).then(()=>history.push("/scientistlist"));
-};
+ // form validation(formik) added using yup
+
+       const formvalidationschema = yup.object({
+       productpic: yup.string().required("The url field is required"),
+       name: yup.string().required("please enter product name").min(1),
+       prize: yup.string().required("why not fill this prize?").min(1)
+       });
+
+       const {handleSubmit, values, handleChange, handleBlur, errors, touched} = useFormik({
+       initialValues: { name:"", productpic:"", prize:"" },
+       validationSchema: formvalidationschema,
+  
+       onSubmit: (newProduct) => {
+       console.log("onsubmit", newProduct);
+       addProduct(newProduct);
+       }
+       });
+
+const addProduct = (newProduct) =>{
+  
+ // POST method is used for create the data
+
+       fetch(`https://616d58f537f997001745d9d1.mockapi.io/products`, {
+       method:"POST",
+       body: JSON.stringify(newProduct),
+       headers: {'Content-Type': 'application/json'},
+       }).then(()=>history.push("/productlist"));
+       };
 
   return(
-    <div className="create-list-place">
-      <TextField value={productpic} 
-      onChange={(event)=>setProductpic(event.target.value)}  label="enter profile url" variant="filled" />
-     
-     <TextField value={name}
-      onChange={(event)=>setName(event.target.value)} label="enter name" variant="filled" />
+    <form onSubmit={handleSubmit} className="create-list-place">
+      <TextField id="productpic" 
+       name="productpic" 
+       value = {values.productpic} 
+       onChange={handleChange} 
+       onBlur={handleBlur}
+       label="enter productpic url" 
+       error={errors.productpic && touched.productpic}
+       helperText={errors.productpic && touched.productpic && errors.productpic}
+       variant="filled" />
 
-      <Button onClick={addUser} variant="contained">Create</Button>
-    </div>
+      <TextField id="name" 
+       name="name" 
+       value = {values.name} 
+       onChange={handleChange} 
+       onBlur={handleBlur}
+       label="enter product name" 
+       error={errors.name && touched.name}
+       helperText={errors.name && touched.name && errors.name}
+       variant="filled" />
+   
+      <TextField id="prize" 
+       name="prize" 
+       value = {values.prize} 
+       onChange={handleChange} 
+       onBlur={handleBlur}
+       label="enter product prize" 
+       error={errors.prize && touched.prize}
+       helperText={errors.prize && touched.prize && errors.prize}
+       variant="filled" />
+
+      <Button type="submit" variant="contained">Create</Button>
+    </form>
   
   );
 }
 
 // edit is developed by using GET and PUT method using API
 
-function Editscientist(){
+function Editproduct(){
   
   const {id} = useParams();
-  const [scientistdet, setScientistdet] = useState(null);
-useEffect(()=>{
-  fetch(`https://616d58f537f997001745d9d1.mockapi.io/products/${id}`, {method:"GET"})
-  .then((data)=>data.json())
-  .then((mv)=>setScientistdet(mv));
-}, [id]);
+  const [productdet, setProductdet] = useState(null);
+      useEffect(()=>{
+      fetch(`https://616d58f537f997001745d9d1.mockapi.io/products/${id}`, {method:"GET"})
+      .then((data)=>data.json())
+      .then((mv)=>setProductdet(mv));
+      }, [id]);
 //only show update movie when data is available
-  return scientistdet? <Updatescientist scientistdet={scientistdet}/>:"";
+      return productdet? <Updateproduct productdet={productdet}/>:"";
   
-}
+      }
 
 
-function Updatescientist({scientistdet}){
-  const [name, setName] = useState(scientistdet.name);
-  const [productpic, setProductpic] = useState(scientistdet.productpic);
-  const history = useHistory();
-  const editUser =()=>{
-    
-    const updatedUser= {productpic, name};//shorthand
-    console.log(updatedUser);
+function Updateproduct({productdet}){
 
-    fetch(`https://616d58f537f997001745d9d1.mockapi.io/products/${scientistdet.id}`, {
-    method:"PUT",
-    body: JSON.stringify(updatedUser),
-    headers: {'Content-Type': 'application/json'},
-}).then(()=>history.push("/scientistlist"))
-  };
-  return(
-    <div className="create-list-place">
-    <TextField value={productpic} 
-    onChange={(event)=>setProductpic(event.target.value)}  label="enter pic url" variant="filled" />
+// form validation(formik) added using yup
+
+     const formvalidationschema = yup.object({
+     productpic: yup.string().required("The url field is required"),
+     name: yup.string().required("please enter product name").min(1),
+     prize: yup.string().required("why not fill this prize?").min(1)
+     });
+
+     const {handleSubmit, values, handleChange, handleBlur, errors, touched} = useFormik({
+     initialValues: { name: productdet.name, productpic:productdet.productpic, prize:productdet.prize },
+     validationSchema: formvalidationschema,
+  
+       onSubmit: (updatedProduct) => {
+       console.log("onsubmit", updatedProduct);
+       editProduct(updatedProduct);
+       }
+       });
+
+const history = useHistory();
+
+const editProduct =(updatedProduct)=>{
+    console.log(updatedProduct);
+
+// PUT method is used for update the data
+
+       fetch(`https://616d58f537f997001745d9d1.mockapi.io/products/${productdet.id}`, {
+       method:"PUT",
+       body: JSON.stringify(updatedProduct),
+       headers: {'Content-Type': 'application/json'},
+       }).then(()=>history.push("/productlist"))
+       };
+       return(
+<form onSubmit={handleSubmit} className="create-list-place">
+
+<TextField id="productpic" 
+      name="productpic" 
+      value = {values.productpic} 
+      onChange={handleChange} 
+      onBlur={handleBlur}
+       label="enter productpic url" 
+       error={errors.productpic && touched.productpic}
+       helperText={errors.productpic && touched.productpic && errors.productpic}
+       variant="filled" />
+
+<TextField id="name" 
+      name="name" 
+      value = {values.name} 
+      onChange={handleChange} 
+      onBlur={handleBlur}
+       label="enter product name" 
+       error={errors.name && touched.name}
+       helperText={errors.name && touched.name && errors.name}
+       variant="filled" />
    
-   <TextField value={name}
-    onChange={(event)=>setName(event.target.value)} label="enter scientist name" variant="filled" />
+<TextField id="prize" 
+      name="prize" 
+      value = {values.prize} 
+      onChange={handleChange} 
+      onBlur={handleBlur}
+       label="enter product prize" 
+       error={errors.prize && touched.prize}
+       helperText={errors.prize && touched.prize && errors.prize}
+       variant="filled" />
 
-    <Button onClick={editUser} variant="contained">Save</Button>
-  </div>
+    <Button type="submit" variant="contained">Save</Button>
+  </form>
   );
 }
 
   
-// userlist developed by using GET method and DELETE method is used for delete list using API
+// Productlist developed by using GET method and DELETE method is used for delete list using API
 
-function Scientistlist(){
+function Productlist(){
 
-  const [scientist, setScientist] = useState([]);
+  // In usestate initially empty array
+  const [product, setProduct] = useState([]);
   // console.log(scientist);
-  const getScientist = () =>{
-      fetch("https://616d58f537f997001745d9d1.mockapi.io/products")
-      .then((data)=>data.json())
-      .then((scis)=>setScientist(scis));
-  };
-  useEffect(getScientist, []);
+            const getProduct = () =>{
+            fetch("https://616d58f537f997001745d9d1.mockapi.io/products")
+            .then((data)=>data.json())
+            .then((ptd)=>setProduct(ptd));
+            };
+  useEffect(getProduct, []);
 
+  // DELETE method is used for delete the data
   //after delete and refresh
-  const deleteScientist = (id) =>{
-    fetch(`https://616d58f537f997001745d9d1.mockapi.io/products/${id}`, {method:"DELETE"})
-    .then(()=>getScientist());
-  };
+           const deleteProduct = (id) =>{
+           fetch(`https://616d58f537f997001745d9d1.mockapi.io/products/${id}`, {method:"DELETE"})
+           .then(()=>getProduct());
+            };
 
   const history = useHistory();
   return(
     <section>
-      {scientist.map(({productpic,name,id})=>(<Listscientist productpic={productpic} name={name}
-      id={id}
-      deleteButton= {<IconButton 
-        onClick={()=> deleteScientist(id)}
-        aria-label="delete" color="error"
-      >
-      <DeleteIcon />
-    </IconButton>}
-      editButton= {<IconButton 
-        aria-label="edit"  color="success"
-       onClick={()=>history.push("/scientistlist/edit/" + id)}>
-       <EditIcon />
-     </IconButton>}
+      {product.map(({productpic,name,prize,id})=>(<Listproduct productpic={productpic} name={name} prize={prize} id={id}
+          deleteButton= {<IconButton 
+           onClick={()=> deleteProduct(id)}
+              aria-label="delete" color="error">
+                <DeleteIcon />
+                  </IconButton>}
+                editButton= {<IconButton 
+              aria-label="edit"  color="success"
+            onClick={()=>history.push("/productlist/edit/" + id)}>
+          <EditIcon />
+        </IconButton>}
       />))}
     </section>
   );
 }
 
-function Listscientist({productpic,name,editButton,deleteButton}){
+function Listproduct({productpic,name,prize,editButton,deleteButton}){
   return(
   <div className="content-div">
-    <div>
-  <img className="hero-img" src={productpic} alt="profile"/>
-  <div className="content-div-name">
-  <h2>{name}</h2>
-
-  <div className="edit-delete">
-    {editButton}{deleteButton}
+    <div className="detail-div">
+      <img className="product-img" src={productpic} alt="profile"/>
+       <div className="content-div-name">
+         <h2 className="text-deco">Product: {name}</h2>
+          <h3 className="text-deco">Prize:  {prize}</h3>
+            <div className="edit-delete">
+              {editButton}{deleteButton}
+            </div>
+        </div>
     </div>
-  
-  </div>
- <hr></hr>
-  </div>
   </div>
   );
 }
@@ -252,7 +337,7 @@ function Listscientist({productpic,name,editButton,deleteButton}){
 
 
 
-
+//reference data
 
 // const products = [{id:"50", productpic:"https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone11-red-select-2019?wid=940&hei=1112&fmt=png-alpha&.v=1566956144763", name:"Apple iPhone 11",prize:"₹47,900.00"},
 // {id:"51", productpic:"https://i1.wp.com/www.alphr.com/wp-content/uploads/2020/02/How-to-Add-Airpods-on-Find-my-phone-iphone.jpg?fit=1000%2C666&ssl=1", name:"airpods iphone",prize:"₹12,900"},
