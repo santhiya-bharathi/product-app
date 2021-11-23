@@ -92,8 +92,8 @@ function Home() {
   const history = useHistory();
   return (
     <div className="home">
-        <h2 className="home-hello">Hello All!!!</h2>
-           <img src="https://cloudproserv.com/wp-content/uploads/2019/05/Welcome-to-our-new-website-1280x720.jpg" alt="welcome"/>
+        <h2 className="home-hello">Welcome to Our Home Page</h2>
+           <img className="home-img" src="https://i.pinimg.com/originals/a2/c3/f9/a2c3f98d8e1145c41dba45d8072afac7.gif" alt="welcome"/>
              <div>
            <Button onClick={()=>history.push("/productlist") }variant="contained">productlist<ArrowForwardIcon/></Button>
        </div>
@@ -106,7 +106,7 @@ function NotFound(){
   return(
     <div className="not-found-pic">
       <h1 className="not-found-name">404 Not Found</h1>
-      <img  src="https://cdn.dribbble.com/users/1138875/screenshots/4669703/404_animation.gif" alt="404 not found"/>
+      <img  className="not-found-img" src="https://cdn.dribbble.com/users/1138875/screenshots/4669703/404_animation.gif" alt="404 not found"/>
     </div>
   );
 }
